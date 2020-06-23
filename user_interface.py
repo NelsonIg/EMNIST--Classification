@@ -3,7 +3,7 @@
 
 # # GUI
 
-# In[1]:
+# In[2]:
 
 
 import matplotlib.pyplot as plt
@@ -13,7 +13,7 @@ import cv2 as cv
 import pickle as pk
 
 
-# In[2]:
+# In[3]:
 
 
 class Gui:
@@ -25,7 +25,7 @@ class Gui:
     im_w, im_h = (224,224)
     # invisible image for copying canvas
     __img = Image.new('L',(im_w, im_h))
-    __draw = ImageDraw.Draw(__img)
+    __draw_Obj = ImageDraw.Draw(__img)
     #canvas
     canvas = None
     #text windows
@@ -44,7 +44,7 @@ class Gui:
         offs = 10
         #draws on the canvas and on an invisible image that contains the same drawing
         cls.canvas.create_oval((event.x-offs),(event.y-offs), event.x+offs, event.y+offs, fill='white', outline ='white')
-        cls.__draw.ellipse([(event.x-offs),(event.y-offs), event.x+offs, event.y+offs], fill='white')
+        cls.__draw_Obj.ellipse([(event.x-offs),(event.y-offs), event.x+offs, event.y+offs], fill='white')
 
     @classmethod
     def __del_img(cls):
@@ -52,7 +52,7 @@ class Gui:
         cls.canvas.delete('all')
         #delete img by reinitializing it
         cls.__img = Image.new('L',(cls.im_w, cls.im_h))
-        cls.__draw = ImageDraw.Draw(cls.__img)
+        cls.__draw_Obj = ImageDraw.Draw(cls.__img)
         #delete prediction output
         cls.textPred.delete(1.0,tk.END)
 
