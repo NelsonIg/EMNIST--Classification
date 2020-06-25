@@ -3,7 +3,7 @@
 
 # # GUI
 
-# In[2]:
+# In[1]:
 
 
 import matplotlib.pyplot as plt
@@ -13,12 +13,12 @@ import cv2 as cv
 import pickle as pk
 
 
-# In[3]:
+# In[2]:
 
 
 class Gui:
     ''' - Display a GUI to allow classification of handwritten characters
-        - Use start() to run GUI, respective classifier as argument needed
+        - Use Gui.start() to run GUI, respective classifier and target type as argument needed
     '''
     
     #window + canvas to draw on
@@ -37,11 +37,13 @@ class Gui:
     __tries = 0
     # Classifier
     __clf = None
+    #Target Type: letters, digits
+    target_type = None
 
     @classmethod
     def __draw(cls, event):
         #draw white line on black background
-        offs = 10
+        offs = 8
         #draws on the canvas and on an invisible image that contains the same drawing
         cls.canvas.create_oval((event.x-offs),(event.y-offs), event.x+offs, event.y+offs, fill='white', outline ='white')
         cls.__draw_Obj.ellipse([(event.x-offs),(event.y-offs), event.x+offs, event.y+offs], fill='white')
@@ -64,15 +66,22 @@ class Gui:
         im = cv.imread('img.png',cv.IMREAD_GRAYSCALE)
         im = cv.GaussianBlur(im,(5,5),1)
         im = cv.resize(im, dsize = (28,28),interpolation=cv.INTER_AREA)
+        plt.imshow(im)
         im = im.reshape(1,-1)
         pred  = cls.__clf.predict(im)
-        #print prediction
-        if pred<= 9:
-            offset = 48 # 0--> 48
-        elif pred <36:
-            offset = 55 # A --> 65
+        if cls.target_type == 'digits' or cls.target_type == 'all':
+            #either classes from 0 to 9 (digits) or 0 to 61 (all)
+            if pred<= 9:
+                offset = 48 # 0--> 48
+            elif pred <36:
+                offset = 55 # A --> 65
+            else:
+                offset = 60# a --> 97
+        elif cls.target_type == 'letters':
+            #classes from 1 to 26 (upper + lower case in one class)
+            offset = 64 # A --> 65
         else:
-            offset = 60# a --> 97
+            raise ValueError('target_type must be "digits", "all" or "letters"')
         cls.textPred.delete(1.0,tk.END)
         cls.textPred.insert(tk.INSERT,f'class: {pred[0]}\nascii: '+chr(offset + pred[0]))
 
@@ -114,9 +123,13 @@ class Gui:
 
 
     @classmethod
-    def start(cls, clf):
-        # set classifier
+    def start(cls, clf, target_type: str):
+        if not isinstance(target_type, str):
+            raise TypeError('target_type must be of type str')
+        # set classifier and target type
         cls.__clf = clf
+        cls.target_type = target_type
+        
         m = tk.Tk()
         m.minsize(300,300)
 
@@ -160,10 +173,4 @@ class Gui:
 
         m.mainloop()
         
-
-
-# In[ ]:
-
-
-
 
