@@ -11,9 +11,33 @@ import tkinter as tk
 from PIL import ImageTk, Image, ImageDraw
 import cv2 as cv
 import pickle as pk
+import numpy as np
 
 
 # In[2]:
+
+
+def get_roi(image):
+    ''' return region of interest of binary image'''   
+    # find contours
+    ctrs, hier = cv.findContours(image.copy(), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    # Get rectangle
+    x, y, w, h = cv.boundingRect(ctrs[0]) #(x, y, width, height)
+    # copy segmented image
+    im_crop = image[y-5:y+h+5,x-5:x+w+5,]
+    return im_crop
+
+def adjust_img(image, width, height):
+    ''' apply lowpass filter to image and resize to (height, width)'''
+    image = cv.GaussianBlur(image,(5,5),1)
+    image = cv.resize(image, dsize = (height,width),interpolation=cv.INTER_AREA)
+    plt.imshow(image)
+    image_vec = image.reshape(1,-1)
+    return image_vec
+    
+
+
+# In[3]:
 
 
 class Gui:
@@ -24,8 +48,8 @@ class Gui:
     #window + canvas to draw on
     im_w, im_h = (224,224)
     # invisible image for copying canvas
-    __img = Image.new('L',(im_w, im_h))
-    __draw_Obj = ImageDraw.Draw(__img)
+    __img = None 
+    __draw_Obj = None
     #canvas
     canvas = None
     #text windows
@@ -43,7 +67,7 @@ class Gui:
     @classmethod
     def __draw(cls, event):
         #draw white line on black background
-        offs = 8
+        offs = 6
         #draws on the canvas and on an invisible image that contains the same drawing
         cls.canvas.create_oval((event.x-offs),(event.y-offs), event.x+offs, event.y+offs, fill='white', outline ='white')
         cls.__draw_Obj.ellipse([(event.x-offs),(event.y-offs), event.x+offs, event.y+offs], fill='white')
@@ -64,11 +88,11 @@ class Gui:
         '''
         cls.__img.save('img.png')
         im = cv.imread('img.png',cv.IMREAD_GRAYSCALE)
-        im = cv.GaussianBlur(im,(5,5),1)
-        im = cv.resize(im, dsize = (28,28),interpolation=cv.INTER_AREA)
-        plt.imshow(im)
-        im = im.reshape(1,-1)
-        pred  = cls.__clf.predict(im)
+        # find the character in image
+        im_roi = get_roi(im)
+        # fit the image to data set
+        im_roi = adjust_img(im_roi, 28, 28)
+        pred  = cls.__clf.predict(im_roi)
         if cls.target_type == 'digits' or cls.target_type == 'all':
             #either classes from 0 to 9 (digits) or 0 to 61 (all)
             if pred<= 9:
@@ -130,6 +154,9 @@ class Gui:
         cls.__clf = clf
         cls.target_type = target_type
         
+        #initialize image
+        cls.__img = Image.new('L',(cls.im_w, cls.im_h))
+        cls.__draw_Obj = ImageDraw.Draw(cls.__img)
         m = tk.Tk()
         m.minsize(300,300)
 
