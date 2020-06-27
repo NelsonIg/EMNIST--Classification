@@ -3,7 +3,7 @@
 
 # # GUI
 
-# In[17]:
+# In[1]:
 
 
 import matplotlib.pyplot as plt
@@ -15,7 +15,7 @@ import numpy as np
 from skimage.feature import hog
 
 
-# In[18]:
+# In[2]:
 
 
 def get_roi(image):
@@ -81,7 +81,7 @@ def pred_character(classifier, im_vec, target, HOG=False):
     
 
 
-# In[19]:
+# In[3]:
 
 
 class Gui:
@@ -254,31 +254,4 @@ class Gui:
 
         m.mainloop()
         
-
-
-# In[20]:
-
-
-with open('let_KNN_clf.pickle','rb') as f:
-    let_KNN_clf = pk.load(f)
-with open('dig_KNN_clf.pickle','rb') as f:
-    dig_KNN_clf = pk.load(f)
-with open('dig_MLP_clf.pickle','rb') as f:
-    dig_MLP_clf = pk.load(f)
-with open('let_MLP_clf.pickle', 'rb') as f:
-    let_MLP_clf = pk.load(f)
-with open('dig_MLP_clf_hog.pickle', 'rb') as f:
-    dig_MLP_clf_hog = pk.load(f)
-
-
-# In[21]:
-
-
-Gui.start(dig_MLP_clf_hog, 'digits', True)
-
-
-# In[ ]:
-
-
-
 
