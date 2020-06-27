@@ -3,7 +3,7 @@
 
 # # GUI
 
-# In[9]:
+# In[1]:
 
 
 import matplotlib.pyplot as plt
@@ -12,9 +12,10 @@ from PIL import ImageTk, Image, ImageDraw
 import cv2 as cv
 import pickle as pk
 import numpy as np
+from skimage.feature import hog
 
 
-# In[10]:
+# In[2]:
 
 
 def get_roi(image):
@@ -44,22 +45,43 @@ def draw_named_rect(image, rectangle, text):
     cv.rectangle(img, (rect[0],rect[1]),(rect[0]+rect[2],rect[1]+rect[3]), 255, 1)
     cv.putText(img, text,(rect[0],rect[1]-10), cv.FONT_HERSHEY_SIMPLEX, 0.9,255, 1)
     return img
-    
-        
-    
-    
-    
-def adjust_img(image, width, height):
+      
+def adjust_img(image, width, height, HOG=False):
     ''' apply lowpass filter to image and resize to (height, width)'''
     image = cv.GaussianBlur(image,(5,5),1)
     image = cv.resize(image, dsize = (height,width),interpolation=cv.INTER_AREA)
-    plt.imshow(image)
-    image_vec = image.reshape(1,-1)
+    if HOG is False:
+        image_vec = image.reshape(1,-1)
+    else:
+        image_vec = hog(image, orientations=9, pixels_per_cell=(14, 14), cells_per_block=(1, 1))
     return image_vec
+
+def pred_character(classifier, im_vec, target, HOG=False):
+    '''classifies object and returns ascii code'''
+    if HOG is False:
+        pred  = classifier.predict(im_vec)
+    else:
+        pred  = classifier.predict(np.array([im_vec], 'float64'))
+    # set character depending on target_type
+    if target== 'digits' or target == 'all':
+        #either classes from 0 to 9 (digits) or 0 to 61 (all)
+        if pred<= 9:
+            offset = 48 # 0--> 48
+        elif pred <36:
+            offset = 55 # A --> 65
+        else:
+            offset = 60# a --> 97
+    elif target == 'letters':
+        #classes from 1 to 26 (upper + lower case in one class)
+        offset = 64 # A --> 65
+    else:
+        raise ValueError('target must be "digits", "all" or "letters"')
+    return pred[0]+offset
+
     
 
 
-# In[21]:
+# In[3]:
 
 
 class Gui:
@@ -116,30 +138,14 @@ class Gui:
         
         for idx, rect in enumerate(rects):
             # fit the image to data set
-            im_vec = adjust_img(images_roi[idx], 28 ,28)
-            pred  = cls.__clf.predict(im_vec)
-            # set character depending on target_type
-            if cls.target_type == 'digits' or cls.target_type == 'all':
-                #either classes from 0 to 9 (digits) or 0 to 61 (all)
-                if pred<= 9:
-                    offset = 48 # 0--> 48
-                elif pred <36:
-                    offset = 55 # A --> 65
-                else:
-                    offset = 60# a --> 97
-            elif cls.target_type == 'letters':
-                #classes from 1 to 26 (upper + lower case in one class)
-                offset = 64 # A --> 65
-            else:
-                raise ValueError('target_type must be "digits", "all" or "letters"')
+            im_vec = adjust_img(images_roi[idx], 28 ,28, cls.__hog)
+            #predict and return ascii code
+            pred_ascii = pred_character(cls.__clf, im_vec, cls.target_type, cls.__hog)
             #draw classification
-            im = draw_named_rect(im, rect, chr(pred[0]+offset))
+            im = draw_named_rect(im, rect, chr(pred_ascii))
         cv.imshow('s', im)
         cv.waitKey(0)
         cv.destroyAllWindows()
-        cls.textPred.delete(1.0,tk.END)
-        cls.textPred.insert(tk.INSERT,f'class: {pred[0]}\nascii: '+chr(offset + pred[0]))
-
     #detecting the mean of user digits in percent   
     @classmethod
     def __yes(cls):
@@ -194,13 +200,13 @@ class Gui:
 
 
     @classmethod
-    def start(cls, clf, target_type: str):
+    def start(cls, clf, target_type: str, hog=False):
         if not isinstance(target_type, str):
             raise TypeError('target_type must be of type str')
         # set classifier and target type
         cls.__clf = clf
         cls.target_type = target_type
-        
+        cls.__hog = hog
         #initialize image
         cls.__img = Image.new('L',(cls.im_w, cls.im_h))
         cls.__draw_Obj = ImageDraw.Draw(cls.__img)
@@ -248,10 +254,4 @@ class Gui:
 
         m.mainloop()
         
-
-
-# In[ ]:
-
-
-
 
