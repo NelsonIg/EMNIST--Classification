@@ -3,7 +3,7 @@
 
 # # GUI
 
-# In[1]:
+# In[9]:
 
 
 import matplotlib.pyplot as plt
@@ -14,7 +14,7 @@ import pickle as pk
 import numpy as np
 
 
-# In[2]:
+# In[10]:
 
 
 def get_roi(image):
@@ -27,6 +27,28 @@ def get_roi(image):
     im_crop = image[y-5:y+h+5,x-5:x+w+5,]
     return im_crop
 
+def get_roi_all(image): 
+    ''' find objects in image, return vector of segmented images and respective rectangles'''
+    # find contours
+    ctrs, hier = cv.findContours(image.copy(), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    # find rectangles
+    rects = [cv.boundingRect(ctr) for ctr in ctrs]
+    #copy each object to image vector
+    im_vec = [image[rect[1]:rect[1]+rect[3], rect[0]:rect[0]+rect[2]] for rect in rects]
+    return im_vec, rects
+
+def draw_named_rect(image, rectangle, text):
+    '''draw rectangle and name it'''
+    rect = rectangle
+    img = image
+    cv.rectangle(img, (rect[0],rect[1]),(rect[0]+rect[2],rect[1]+rect[3]), 255, 1)
+    cv.putText(img, text,(rect[0],rect[1]-10), cv.FONT_HERSHEY_SIMPLEX, 0.9,255, 1)
+    return img
+    
+        
+    
+    
+    
 def adjust_img(image, width, height):
     ''' apply lowpass filter to image and resize to (height, width)'''
     image = cv.GaussianBlur(image,(5,5),1)
@@ -37,7 +59,7 @@ def adjust_img(image, width, height):
     
 
 
-# In[3]:
+# In[21]:
 
 
 class Gui:
@@ -46,10 +68,11 @@ class Gui:
     '''
     
     #window + canvas to draw on
-    im_w, im_h = (224,224)
+    im_w, im_h = (600,600)
     # invisible image for copying canvas
     __img = None 
     __draw_Obj = None
+    __thicknes = None
     #canvas
     canvas = None
     #text windows
@@ -67,7 +90,7 @@ class Gui:
     @classmethod
     def __draw(cls, event):
         #draw white line on black background
-        offs = 6
+        offs = cls.__thicknes
         #draws on the canvas and on an invisible image that contains the same drawing
         cls.canvas.create_oval((event.x-offs),(event.y-offs), event.x+offs, event.y+offs, fill='white', outline ='white')
         cls.__draw_Obj.ellipse([(event.x-offs),(event.y-offs), event.x+offs, event.y+offs], fill='white')
@@ -89,23 +112,31 @@ class Gui:
         cls.__img.save('img.png')
         im = cv.imread('img.png',cv.IMREAD_GRAYSCALE)
         # find the character in image
-        im_roi = get_roi(im)
-        # fit the image to data set
-        im_roi = adjust_img(im_roi, 28, 28)
-        pred  = cls.__clf.predict(im_roi)
-        if cls.target_type == 'digits' or cls.target_type == 'all':
-            #either classes from 0 to 9 (digits) or 0 to 61 (all)
-            if pred<= 9:
-                offset = 48 # 0--> 48
-            elif pred <36:
-                offset = 55 # A --> 65
+        images_roi, rects = get_roi_all(im)
+        
+        for idx, rect in enumerate(rects):
+            # fit the image to data set
+            im_vec = adjust_img(images_roi[idx], 28 ,28)
+            pred  = cls.__clf.predict(im_vec)
+            # set character depending on target_type
+            if cls.target_type == 'digits' or cls.target_type == 'all':
+                #either classes from 0 to 9 (digits) or 0 to 61 (all)
+                if pred<= 9:
+                    offset = 48 # 0--> 48
+                elif pred <36:
+                    offset = 55 # A --> 65
+                else:
+                    offset = 60# a --> 97
+            elif cls.target_type == 'letters':
+                #classes from 1 to 26 (upper + lower case in one class)
+                offset = 64 # A --> 65
             else:
-                offset = 60# a --> 97
-        elif cls.target_type == 'letters':
-            #classes from 1 to 26 (upper + lower case in one class)
-            offset = 64 # A --> 65
-        else:
-            raise ValueError('target_type must be "digits", "all" or "letters"')
+                raise ValueError('target_type must be "digits", "all" or "letters"')
+            #draw classification
+            im = draw_named_rect(im, rect, chr(pred[0]+offset))
+        cv.imshow('s', im)
+        cv.waitKey(0)
+        cv.destroyAllWindows()
         cls.textPred.delete(1.0,tk.END)
         cls.textPred.insert(tk.INSERT,f'class: {pred[0]}\nascii: '+chr(offset + pred[0]))
 
@@ -127,6 +158,17 @@ class Gui:
         cls.entryAcc.delete(0,tk.END)
         cls.entryAcc.insert(tk.INSERT,str(round(cls.__mean*100,1))+'%')
         cls.__del_img()
+    
+    @classmethod
+    def __inc_thickness(cls):
+        if  cls.__thicknes < 11:
+            cls.__thicknes+=1
+    
+    @classmethod
+    def __dec_thickness(cls):
+        if  cls.__thicknes > 1:
+            cls.__thicknes-=1
+    
 
     @classmethod
     def __key_yes_no(cls, event):
@@ -137,6 +179,11 @@ class Gui:
             cls.__yes()
         if key == 'r' or key == 'R':
             cls.__reset()
+        if key == '+':
+            cls.__inc_thickness()
+        if key == '-':
+            cls.__dec_thickness()
+            
 
     @classmethod
     def __reset(cls):
@@ -157,6 +204,7 @@ class Gui:
         #initialize image
         cls.__img = Image.new('L',(cls.im_w, cls.im_h))
         cls.__draw_Obj = ImageDraw.Draw(cls.__img)
+        cls.__thicknes = 5
         m = tk.Tk()
         m.minsize(300,300)
 
@@ -200,4 +248,10 @@ class Gui:
 
         m.mainloop()
         
+
+
+# In[ ]:
+
+
+
 
