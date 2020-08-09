@@ -6,6 +6,6 @@ This project aims to implement a simple classification of charaters using common
 3. CLS_MLP.zip: contains the most recent MLP Classifiers
 4. output.jpg shows an example of the character recognition
 
-![](https://github.com/NelsonIg/EMINST-Classification/blob/master/output.lpg.JPG)
+![ ](https://github.com/NelsonIg/EMINST-Classification/blob/master/output.lpg.JPG)
 
 Project is still in work, and is supposed to finish of the end of august
