@@ -6,4 +6,6 @@ This project aims to implement a simple classification of charaters using common
 3. CLS_MLP.zip: contains the most recent MLP Classifiers
 4. output.jpg shows an example of the character recognition
 
+![Example](http://url/to/img.png)
+
 Project is still in work, and is supposed to finish of the end of august
