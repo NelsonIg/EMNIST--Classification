@@ -8,4 +8,3 @@ This project aims to implement a simple classification of charaters using common
 
 ![ ](https://github.com/NelsonIg/EMINST-Classification/blob/master/helloworld.jpg)
 
-Project is still in work, and is supposed to finish of the end of august
