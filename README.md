@@ -5,6 +5,10 @@ This project aims to implement a simple classification of characters using commo
 2. char_recognition.ipynp: classifying characters from provided image.
 3. CLS_MLP.zip: contains the MLP classifiers
 4. hellloworld.jpg shows an example of the character recognition
-
+## Installation
+If tkinter is not installed by default, then get it for your environment. Anaconda is recommended, since it has it by default.  
+Now type the following:  
+`pip install -r requirements.txt`
+## Example Output
 ![ ](https://github.com/NelsonIg/EMINST-Classification/blob/master/helloworld.jpg)
 
