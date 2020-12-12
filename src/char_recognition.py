@@ -1,6 +1,6 @@
 '''
 Author: Nelson Igbokwe
-Project: EMINST-Classification
+Project: EMNIST-Classification
 '''
 
 import cv2 as cv
