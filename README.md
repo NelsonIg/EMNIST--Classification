@@ -8,7 +8,8 @@ This project aims to implement a simple classification of characters using commo
 If tkinter is not installed by default, then get it for your environment. Anaconda is recommended, since it has it by default.  
 Now type the following:  
 `pip install -r requirements.txt`
-## Example Output
+## Example Output  
+Here the `bal_MLP_clf` is used to classify digits and letters. But be free to train new models!
 ![ ](https://github.com/NelsonIg/EMINST-Classification/blob/master/images/example_inp.jpg)
 ![ ](https://github.com/NelsonIg/EMINST-Classification/blob/master/images/example_out.jpg)
 
