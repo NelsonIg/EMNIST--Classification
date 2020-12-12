@@ -5,7 +5,7 @@ This project aims to implement a simple classification of characters using commo
 2. char_recognition.ipynp: classifying characters from provided image.
 3. src/models: contains classifiers
 ## Installation
-If tkinter is not installed by default, then get it for your environment. Anaconda is recommended, since it has it by default.  
+If tkinter is not installed by default, then get it for your environment. Anaconda is recommended, since it has it by default. You will need Jupyter as well for training models, which comes with Anaconda too.  
 Now type the following:  
 `pip install -r requirements.txt`
 ## Example Output  
