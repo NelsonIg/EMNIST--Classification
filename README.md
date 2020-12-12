@@ -1,4 +1,4 @@
-# EMINST-Classification
+# EMNIST -Classification
 This project aims to implement a simple classification of characters using common classifiers. Basics of machine learning and machine vision are used.
 ## Files
 1. ML-Models.ipynp: training and testing of models
