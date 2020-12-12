@@ -10,5 +10,6 @@ If tkinter is not installed by default, then get it for your environment. Anacon
 Now type the following:  
 `pip install -r requirements.txt`
 ## Example Output
-![ ](https://github.com/NelsonIg/EMINST-Classification/blob/master/helloworld.jpg)
+![ ](https://github.com/NelsonIg/EMINST-Classification/blob/master/images/example_inp.jpg)
+![ ](https://github.com/NelsonIg/EMINST-Classification/blob/master/images/example_out.jpg)
 
